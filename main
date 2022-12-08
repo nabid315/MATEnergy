@@ -1,0 +1,71 @@
+#include "SevSeg.h"
+SevSeg sevseg;
+int sensorPin = A0; // select the input pin for the potentiometer
+int ledPin = 4; // select the pin for the LED
+int sensorValue = 0; // variable to store the value coming from the sensor
+long max_long_val = 2147483647L;
+long buttonPushCounter = 000;    // counter for the number of button presses
+long counter = 0;
+unsigned long previousMillis = 0UL;
+unsigned long interval = 1000UL;
+//unsigned long Timeout = 0UL; 
+
+
+void setup() {
+
+
+  byte numDigits = 3;
+  byte digitPins[] = {11, 12, 1};
+  byte segmentPins[] = {9, 2, 3, 5, 6, 8, 7};
+  bool resistorsOnSegments = true; 
+  byte hardwareConfig = COMMON_CATHODE; 
+  sevseg.begin(hardwareConfig, numDigits, digitPins, segmentPins, resistorsOnSegments);
+  sevseg.setBrightness(90); 
+  pinMode(ledPin, OUTPUT);
+  //pinMode(sensorPin, INPUT); 
+  //Serial.begin(9600); 
+}
+
+void Timer(){
+
+ unsigned long currentMillis = millis();
+ if(currentMillis - previousMillis >= interval*360UL){
+  sevseg.setNumber(0, 0);   
+  
+ 	// Update the previousMillis value
+ 	previousMillis = currentMillis;
+  }
+
+} 
+
+
+void loop(){
+
+  // read the value from the sensor:
+  sensorValue = analogRead(sensorPin);
+  sensorValue = sensorValue * 5 / 1023 ; //its convert digital value back into voltage
+  // turn the ledPin on
+  if (sensorValue >= 5 )
+  {
+    digitalWrite(ledPin, HIGH);
+    buttonPushCounter++; 
+     if(counter < max_long_val)
+       counter++;
+     buttonPushCounter %= 999; // buttonPushCounter = buttonPushCounter/9; give the value of remainder
+    
+     sevseg.setNumber(buttonPushCounter, 0);
+     sevseg.refreshDisplay();     
+     delay(100 - (counter%99));   
+ } 
+
+ else {
+   
+   digitalWrite(ledPin, LOW); 
+   sevseg.refreshDisplay();
+
+ } 
+ 
+  
+   Timer(); 
+
+}
